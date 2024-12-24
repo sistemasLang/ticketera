@@ -42,14 +42,14 @@ export class UserController {
         return this.userService.loginUser(loginUserDto.username, loginUserDto.password);
       }
 
-      @UseGuards(JwtAuthGuard)
-      @Post('/logout')
-      logout() {
-        return {
-          msg: 'Sesión cerrada exitosamente',
-          data: [],
-        };
-      }
+    @UseGuards(JwtAuthGuard)
+    @Post('/logout')
+    logout() {
+      return {
+        msg: 'Sesión cerrada exitosamente',
+        data: [],
+      };
+    }
 
     @UseGuards(JwtAuthGuard)
     @Post('/me')

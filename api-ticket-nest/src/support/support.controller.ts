@@ -1,8 +1,8 @@
-import { Body, Controller, Get, NotFoundException, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, NotFoundException, Post, Put, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { SupportService } from './support.service';
 import { GetSupportByIdDto } from './dto/get-support-by-id.dto';
-import { CreateTicketDto, GetTicketByAuthDto } from './dto/support-requests.dto';
+import { CreateTicketDto, GetTicketByAuthDto, GetTicketsIdAuthDto, EditTicketDto} from './dto/support-requests.dto';
 import { ClientService } from '../client/client.service'; 
 
 
@@ -41,6 +41,46 @@ export class SupportController {
     };
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('getState')
+  async getState() {
+    const states = await this.supportService.getAllState();
+    return {
+      msg: `Se encontraron ${states.length} estados.`,
+      data: states,
+    };
+  }
+
+
+  @UseGuards(JwtAuthGuard)
+  @Get('getPriority')
+  async getPriority() {
+    const priority = await this.supportService.getAllPriority();
+    return {
+      msg: `Se encontraron ${priority.length} estados.`,
+      data: priority,
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('editTicket')
+  async editTicket(@Body() editTicketDto: EditTicketDto) {
+    
+    const { id, idstate, idprioridad, iduser } = editTicketDto;
+
+    const updatedTicket = await this.supportService.editTicket(id, {
+      stateId: idstate,
+      priorityId: idprioridad,
+      userId: iduser,
+    });
+
+    return {
+      msg: `El ticket con ID ${id} fue actualizado exitosamente.`,
+      data: updatedTicket,
+    };
+  }
+
+  //Servicios para el cliente
   @Post('create')
   async createSupport(@Body() createTicketDto: CreateTicketDto) {
     const { auth, secret, title, description } = createTicketDto;
@@ -64,6 +104,70 @@ export class SupportController {
     };
 
   }
+
+  @Post('getTicketAuthCliente')
+  async getTicketAuthCliente(@Body() getTicketAuthCliente: GetTicketByAuthDto) {
+    const { auth, secret } = getTicketAuthCliente;
+
+
+    const client = await this.clientService.validateClientAuth(auth, secret);
+
+    if (!client) {
+      return {
+        msg: 'Autenticación inválida.',
+        data: [],
+      };
+    }
+    
+    const tickets = await this.supportService.getTicketsByCliente(client.id)
+
+    if (!tickets) {
+      return {
+        msg: 'No se han encontrado tickets',
+        data: [],
+      };
+    }
+
+    return {
+      data: tickets
+    }
+
+  }
+
+
+  @Post('getTicketIdSupportByAuth')
+  async getTicketIdSupportByAuth(@Body() GetTicketsIdAuthDto: GetTicketsIdAuthDto) {
+    const { id, auth, secret } = GetTicketsIdAuthDto;
+
+
+    const client = await this.clientService.validateClientAuth(auth, secret);
+
+    if (!client) {
+      return {
+        msg: 'Autenticación inválida.',
+        data: [],
+      };
+    }
+    
+    const tickets = await this.supportService.getTicketsByCliente(client.id, id)
+
+    if (!tickets) {
+      return {
+        msg: `No se han encontrado el ticket con id ${id}`,
+        data: [],
+      };
+    }
+
+    return {
+      data: tickets
+    }
+
+  }
+
+
+
+
+
 
 
   
