@@ -30,6 +30,44 @@ export class SupportService {
     return this.viewSupportRepository.find();
   }
 
+  async getPaginatedSupports( page: number = 1, limit: number = 20, filters: { [key: string]: any } = {}, ): Promise<
+  {
+    data: ViewSupportEntity[];
+    currentPage: number;
+    totalPages: number;
+    totalRegistry: number;
+  }> {
+    const query = this.viewSupportRepository.createQueryBuilder('support');
+
+   
+    Object.keys(filters).forEach((key) => {
+      if (filters[key] !== undefined) {
+        query.andWhere(`support.${key} = :${key}`, { [key]: filters[key] });
+      }
+    });
+
+    
+    const totalRegistry = await query.getCount();
+
+  
+    const offset = (page - 1) * limit;
+    query.skip(offset).take(limit);
+
+  
+    const data = await query.getMany();
+
+   
+    const totalPages = Math.ceil(totalRegistry / limit);
+
+    return {
+      data,
+      currentPage: page,
+      totalPages,
+      totalRegistry,
+    };
+  }
+
+
   async getAllPriority(): Promise<PriorityEntity[]> {
     return this.priorityRepository.find();
   }

@@ -25,6 +25,20 @@ export class SupportController {
     };
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Post('/getSupport')
+  async getPaginatedSupports(@Body() body: { page?: number; limit?: number; filters?: { [key: string]: any } },) {
+    const { page = 1, limit = 20, filters = {} } = body;
+
+    const result = await this.supportService.getPaginatedSupports(page, limit, filters);
+
+    return {
+      success: true,
+      msg: `Se encontraron ${result.totalRegistry} soportes.`,
+      data: result,
+    };
+  }
+
 
   @UseGuards(JwtAuthGuard)
   @Post('getById')
@@ -65,7 +79,7 @@ export class SupportController {
   @UseGuards(JwtAuthGuard)
   @Put('editTicket')
   async editTicket(@Body() editTicketDto: EditTicketDto) {
-    
+
     const { id, idstate, idprioridad, iduser } = editTicketDto;
 
     const updatedTicket = await this.supportService.editTicket(id, {
