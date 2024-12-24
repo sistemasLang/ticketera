@@ -25,7 +25,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
         errorMsg = Array.isArray(responseObject['message'])
           ? responseObject['message']
           : [responseObject['message']];
-        msg = responseObject['error'] || 'Error de validación';
+        msg = responseObject['error'] || 'Error de Autentificación';
       }
     } else if (exception.message) {
       // Manejar errores genéricos
