@@ -23,6 +23,20 @@ export class ClientController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Post('/getClients')
+  async getPaginatedSupports(@Body() body: { page?: number; limit?: number; filters?: { [key: string]: any } },) {
+    const { page = 1, limit = 20, filters = {} } = body;
+
+    const result = await this.clientService.getPaginatedSupports(page, limit, filters);
+
+    return {
+      success: true,
+      msg: `Se encontraron ${result.totalRegistry} soportes.`,
+      data: result,
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Post('getById')
   async getClientById(@Body() getClientByIdDto: GetClientByIdDto) {
     const client = await this.clientService.getClientById(getClientByIdDto.id);

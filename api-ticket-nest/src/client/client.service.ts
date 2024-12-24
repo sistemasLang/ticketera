@@ -124,4 +124,42 @@ export class ClientService {
     return client;
   }
 
+
+  async getPaginatedSupports( page: number = 1, limit: number = 20, filters: { [key: string]: any } = {}, ): Promise<
+    {
+      data: ViewClientEntity[];
+      currentPage: number;
+      totalPages: number;
+      totalRegistry: number;
+    }> {
+      const query = this.viewClientRepository.createQueryBuilder('view_client');
+  
+     
+      Object.keys(filters).forEach((key) => {
+        if (filters[key] !== undefined) {
+          query.andWhere(`view_client.${key} = :${key}`, { [key]: filters[key] });
+        }
+      });
+  
+      
+      const totalRegistry = await query.getCount();
+  
+    
+      const offset = (page - 1) * limit;
+      query.skip(offset).take(limit);
+  
+    
+      const data = await query.getMany();
+  
+     
+      const totalPages = Math.ceil(totalRegistry / limit);
+  
+      return {
+        data,
+        currentPage: page,
+        totalPages,
+        totalRegistry,
+      };
+    }
+
 }
